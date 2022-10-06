@@ -7,6 +7,8 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import br.com.alura.forum.service.TopicoService;
+import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -36,7 +38,11 @@ public class TopicosController {
 	
 	@Autowired
 	private CursoRepository cursoRepository;
-	
+
+	@Autowired
+	private TopicoService topicoService;
+
+
 	@GetMapping
 	@Cacheable(value = "listaDeTopicos")
 	public Page<TopicoDto> lista(@RequestParam(required = false) String nomeCurso,
@@ -57,47 +63,55 @@ public class TopicosController {
 	@Transactional
 	@CacheEvict(value = "listaDeTopicos", allEntries = true)
 	public ResponseEntity<TopicoDto> cadastrar(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {
-		Topico topico = form.converter(cursoRepository);
-		topicoRepository.save(topico);
+//		Topico topico = form.converter(cursoRepository);
+//		topicoRepository.save(topico);
+		TopicoDto topicoDto = topicoService.cadastrar(form);
+		URI uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topicoDto.getId()).toUri();
+		return ResponseEntity.created(uri).body(topicoDto);
 		
-		URI uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topico.getId()).toUri();
-		return ResponseEntity.created(uri).body(new TopicoDto(topico));
+//		URI uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topico.getId()).toUri();
+//		return ResponseEntity.created(uri).body(new TopicoDto(topico));
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<DetalhesDoTopicoDto> detalhar(@PathVariable Long id) {
-		Optional<Topico> topico = topicoRepository.findById(id);
-		if (topico.isPresent()) {
-			return ResponseEntity.ok(new DetalhesDoTopicoDto(topico.get()));
-		}
-		
-		return ResponseEntity.notFound().build();
+	public ResponseEntity<DetalhesDoTopicoDto> detalhar(@PathVariable Long id) throws NotFoundException {
+		//Optional<Topico> topico = topicoRepository.findById(id);
+		DetalhesDoTopicoDto detalhesDoTopicoDto = topicoService.detalhar(id);
+		return ResponseEntity.ok(detalhesDoTopicoDto);
+//		if (topico.isPresent()) {
+//			return ResponseEntity.ok(new DetalhesDoTopicoDto(topico.get()));
+//		}
+//
+//		return ResponseEntity.notFound().build();
 	}
 	
 	@PutMapping("/{id}")
 	@Transactional
 	@CacheEvict(value = "listaDeTopicos", allEntries = true)
-	public ResponseEntity<TopicoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form) {
-		Optional<Topico> optional = topicoRepository.findById(id);
-		if (optional.isPresent()) {
-			Topico topico = form.atualizar(id, topicoRepository);
-			return ResponseEntity.ok(new TopicoDto(topico));
-		}
-		
-		return ResponseEntity.notFound().build();
+	public ResponseEntity<TopicoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form) throws NotFoundException {
+		//Optional<Topico> optional = topicoRepository.findById(id);
+		TopicoDto topicoDto = topicoService.atualizar(id,form);
+		return ResponseEntity.ok(topicoDto);
+//		if (optional.isPresent()) {
+//			Topico topico = form.atualizar(id, topicoRepository);
+//			return ResponseEntity.ok(new TopicoDto(topico));
+//		}
+//
+//		return ResponseEntity.notFound().build();
 	}
 	
 	@DeleteMapping("/{id}")
 	@Transactional
 	@CacheEvict(value = "listaDeTopicos", allEntries = true)
-	public ResponseEntity<?> remover(@PathVariable Long id) {
-		Optional<Topico> optional = topicoRepository.findById(id);
-		if (optional.isPresent()) {
-			topicoRepository.deleteById(id);
-			return ResponseEntity.ok().build();
-		}
-		
-		return ResponseEntity.notFound().build();
+	public ResponseEntity<?> remover(@PathVariable Long id) throws NotFoundException {
+//		Optional<Topico> optional = topicoRepository.findById(id);
+//		if (optional.isPresent()) {
+//			topicoRepository.deleteById(id);
+		topicoService.remover(id);
+		return ResponseEntity.ok().build();
+//		}
+//
+//		return ResponseEntity.notFound().build();
 	}
 
 }
