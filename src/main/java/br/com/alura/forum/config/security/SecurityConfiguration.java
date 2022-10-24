@@ -40,6 +40,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.GET,"/topicos/*")
                 .permitAll()
+                .antMatchers(HttpMethod.POST,"/topicos")
+                .permitAll()
                 .antMatchers(HttpMethod.POST,"/auth")
                 .permitAll()
                 .anyRequest().authenticated()
