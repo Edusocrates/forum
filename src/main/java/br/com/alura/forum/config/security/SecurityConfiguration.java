@@ -42,6 +42,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.POST,"/topicos")
                 .permitAll()
+                .antMatchers(HttpMethod.DELETE,"/topicos")
+                .permitAll()
                 .antMatchers(HttpMethod.POST,"/auth")
                 .permitAll()
                 .anyRequest().authenticated()
